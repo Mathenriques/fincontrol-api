@@ -1,0 +1,19 @@
+package com.fincontrol.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "users")
+@AllArgsConstructor()
+@Getter
+@Setter
+public class User {
+    @Id
+    private String poid;
+    private String name;
+    private String email;
+    private String password;
+}
