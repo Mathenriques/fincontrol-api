@@ -12,8 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 public class User {
     @Id
-    private String poid;
+    private Integer poid;
     private String name;
     private String email;
     private String password;
+    private Currency currency;
 }
