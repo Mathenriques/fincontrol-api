@@ -1,11 +1,14 @@
 package com.fincontrol.config.security;
 
+import com.fincontrol.service.CustomUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,11 +25,18 @@ public class SecurityConfig {
     @Value("${csrf.ignore:false}")
     private boolean shouldIgnoreCsrf;
 
+    private final CustomUserDetailsService userDetailsService;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         if (shouldIgnoreCsrf) {
             http.csrf(csrf -> csrf
                     .ignoringRequestMatchers(String.valueOf(HttpMethod.POST), "/api/fincontrol/users")
+                    .ignoringRequestMatchers(String.valueOf(HttpMethod.POST), "/api/fincontrol/login")
             );
         }
 
@@ -34,6 +44,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                 .requestMatchers(HttpMethod.POST, "/api/fincontrol/users").permitAll()
                 .anyRequest().authenticated()
+            )
+            .formLogin(formLogin -> formLogin
+                .loginProcessingUrl("/api/fincontrol/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .permitAll()
             )
             .httpBasic(Customizer.withDefaults());
 
@@ -43,5 +59,13 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+        return authenticationManagerBuilder.build();
     }
 }

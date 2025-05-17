@@ -42,8 +42,4 @@ public class UserService {
     protected String hashPassword(String rawPassword) {
         return passwordEncoder.encode(rawPassword);
     }
-
-    protected boolean verifyPassword(String rawPassword, String hashedPassword) {
-        return passwordEncoder.matches(rawPassword, hashedPassword);
-    }
 }
