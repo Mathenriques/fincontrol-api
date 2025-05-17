@@ -1,5 +1,6 @@
 package com.fincontrol.service;
 
+import com.fincontrol.dto.UserResponseDto;
 import com.fincontrol.model.User;
 import com.fincontrol.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -26,13 +27,16 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User save(User user) {
+    public UserResponseDto save(User user) {
         log.info("Creating user");
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("User already exists");
         }
-        return userRepository.save(user);
+
+        user.setPassword(hashPassword(user.getPassword()));
+        userRepository.save(user);
+        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
     }
 
     protected String hashPassword(String rawPassword) {
