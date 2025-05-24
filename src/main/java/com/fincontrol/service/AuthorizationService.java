@@ -22,13 +22,8 @@ public class AuthorizationService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        com.fincontrol.model.User user = userRepository.findByEmail(email)
-                .orElseThrow();
-
-        return new User(
-                user.getEmail(),
-                user.getPassword(),
-                new ArrayList<>()
-        );
+        return userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }

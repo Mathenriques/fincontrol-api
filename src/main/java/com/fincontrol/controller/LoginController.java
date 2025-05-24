@@ -1,7 +1,8 @@
 package com.fincontrol.controller;
 
+import com.fincontrol.config.security.TokenService;
 import com.fincontrol.dto.LoginRequestDto;
-import org.springframework.http.HttpStatus;
+import com.fincontrol.model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/fincontrol")
 public class LoginController {
     private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
 
-    public LoginController(AuthenticationManager authenticationManager) {
+    public LoginController(AuthenticationManager authenticationManager, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
@@ -27,6 +30,8 @@ public class LoginController {
                 new UsernamePasswordAuthenticationToken(loginRequestDto.email(), loginRequestDto.password())
         );
 
-        return ResponseEntity.ok().build();
+        String token = tokenService.generateToken((User) authentication.getPrincipal());
+
+        return ResponseEntity.ok(token);
     }
 }
