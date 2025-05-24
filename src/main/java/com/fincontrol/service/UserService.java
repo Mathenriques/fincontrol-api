@@ -4,6 +4,7 @@ import com.fincontrol.dto.UserResponseDto;
 import com.fincontrol.model.User;
 import com.fincontrol.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,19 @@ public class UserService {
 
         user.setPassword(hashPassword(user.getPassword()));
         userRepository.save(user);
+        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+    }
+
+    public UserResponseDto getUserData(String poid) {
+        if (!ObjectId.isValid(poid)) {
+            throw new IllegalArgumentException("Invalid User ID format");
+        }
+
+        User user = userRepository.findByPoid(poid)
+                .orElseThrow(() -> {
+                    return new RuntimeException("User not found with ID: " + poid);
+                });
+
         return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
     }
 

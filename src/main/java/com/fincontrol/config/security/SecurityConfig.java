@@ -1,6 +1,6 @@
 package com.fincontrol.config.security;
 
-import com.fincontrol.service.CustomUserDetailsService;
+import com.fincontrol.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import java.util.Objects;
-
 @Configuration
 @EnableWebSecurity
 @Slf4j
@@ -25,9 +23,9 @@ public class SecurityConfig {
     @Value("${csrf.ignore:false}")
     private boolean shouldIgnoreCsrf;
 
-    private final CustomUserDetailsService userDetailsService;
+    private final AuthorizationService userDetailsService;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(AuthorizationService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
