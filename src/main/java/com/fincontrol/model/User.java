@@ -29,6 +29,7 @@ public class User implements UserDetails {
         this.email = email;
         this.password = password;
         this.currency = currency;
+        this.role = UserRole.USER;
     }
 
     @Override
