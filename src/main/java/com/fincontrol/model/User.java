@@ -1,5 +1,7 @@
 package com.fincontrol.model;
 
+import com.fincontrol.model.enums.Currency;
+import com.fincontrol.model.enums.UserRole;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.types.ObjectId;

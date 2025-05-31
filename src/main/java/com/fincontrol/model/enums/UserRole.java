@@ -1,4 +1,4 @@
-package com.fincontrol.model;
+package com.fincontrol.model.enums;
 
 import lombok.Getter;
 

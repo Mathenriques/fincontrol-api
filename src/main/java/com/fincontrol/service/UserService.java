@@ -40,11 +40,7 @@ public class UserService {
         return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
     }
 
-    public UserResponseDto getUserData(String poid) {
-        if (!ObjectId.isValid(poid)) {
-            throw new IllegalArgumentException("Invalid User ID format");
-        }
-
+    public UserResponseDto getUserData(ObjectId poid) {
         User user = userRepository.findByPoid(poid)
                 .orElseThrow(() -> {
                     return new RuntimeException("User not found with ID: " + poid);
