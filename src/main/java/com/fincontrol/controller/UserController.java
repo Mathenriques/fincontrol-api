@@ -34,4 +34,11 @@ public class UserController {
         ObjectId poid = (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(userService.getUserData(poid));
     }
+
+    @PutMapping("/edit")
+    public ResponseEntity<UserResponseDto> editUser(@RequestBody User user) {
+        ObjectId poid = (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        user.setPoid(poid);
+        return ResponseEntity.ok(userService.editUserData(user));
+    }
 }
