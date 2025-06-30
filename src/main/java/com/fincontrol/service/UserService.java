@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -35,7 +37,7 @@ public class UserService {
             throw new RuntimeException("User already exists");
         }
 
-        user.setPassword(hashPassword(user.getPassword()));
+        user.setPassword(validateAndHashPassword(user.getPassword()));
         userRepository.save(user);
         return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
     }
@@ -53,7 +55,14 @@ public class UserService {
         return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
     }
 
-    protected String hashPassword(String rawPassword) {
+    private String validateAndHashPassword(String rawPassword) {
+        String regexPasswordCheck = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$";
+        Pattern pattern = Pattern.compile(regexPasswordCheck);
+
+        if (!pattern.matcher(rawPassword).matches() || rawPassword.length() < 8) {
+            throw new RuntimeException("Password does not match with rules");
+        }
+
         return passwordEncoder.encode(rawPassword);
     }
 }
