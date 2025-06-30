@@ -1,6 +1,8 @@
 package com.fincontrol.controller;
 
+import com.fincontrol.dto.UserRequestDto;
 import com.fincontrol.dto.UserResponseDto;
+import com.fincontrol.facade.UserFacade;
 import com.fincontrol.model.User;
 import com.fincontrol.service.UserService;
 import org.bson.types.ObjectId;
@@ -14,9 +16,11 @@ import java.util.List;
 @RequestMapping("/api/fincontrol/users")
 public class UserController {
     private final UserService userService;
+    private final UserFacade userFacade;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserFacade userFacade) {
         this.userService = userService;
+        this.userFacade = userFacade;
     }
 
     @GetMapping
@@ -25,8 +29,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> create(@RequestBody User user) {
-        return ResponseEntity.status(201).body(userService.save(user));
+    public ResponseEntity<UserResponseDto> create(@RequestBody UserRequestDto user) {
+        return ResponseEntity.status(201).body(userFacade.createUser(user));
     }
 
     @GetMapping("/details")
@@ -36,9 +40,7 @@ public class UserController {
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<UserResponseDto> editUser(@RequestBody User user) {
-        ObjectId poid = (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        user.setPoid(poid);
-        return ResponseEntity.ok(userService.editUserData(user));
+    public ResponseEntity<UserResponseDto> editUser(@RequestBody UserRequestDto user) {
+        return ResponseEntity.ok(userFacade.editUser(user));
     }
 }

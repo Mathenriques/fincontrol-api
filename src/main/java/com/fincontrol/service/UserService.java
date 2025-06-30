@@ -30,7 +30,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public UserResponseDto save(User user) {
+    public User save(User user) {
         log.info("Creating user");
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
@@ -39,7 +39,7 @@ public class UserService {
 
         user.setPassword(validateAndHashPassword(user.getPassword()));
         userRepository.save(user);
-        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+        return user;
     }
 
     public UserResponseDto getUserData(ObjectId poid) {
@@ -51,7 +51,7 @@ public class UserService {
         return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
     }
 
-    public UserResponseDto editUserData(User newUserData) {
+    public User editUserData(User newUserData) {
         Optional<User> existingUser = userRepository.findByPoid(newUserData.getPoid());
         if(existingUser.isEmpty()) {
             throw new RuntimeException("User not found with ID: " + newUserData.getPoid());
@@ -74,7 +74,7 @@ public class UserService {
             throw new RuntimeException("Failed to save user");
         }
 
-        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+        return user;
 
     }
 
