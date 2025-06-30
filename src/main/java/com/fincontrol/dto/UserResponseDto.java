@@ -1,6 +1,6 @@
 package com.fincontrol.dto;
 
-import com.fincontrol.model.Currency;
+import com.fincontrol.model.enums.Currency;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.types.ObjectId;

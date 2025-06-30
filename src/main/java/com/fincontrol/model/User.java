@@ -1,5 +1,7 @@
 package com.fincontrol.model;
 
+import com.fincontrol.model.enums.Currency;
+import com.fincontrol.model.enums.UserRole;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.types.ObjectId;
@@ -21,8 +23,8 @@ public class User implements UserDetails {
     private String name;
     private String email;
     private String password;
-    private Currency currency;
     private UserRole role;
+    private Currency currency;
 
     public User(String name, String email, String password, Currency currency) {
         this.name = name;
@@ -34,12 +36,14 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (this.role == UserRole.ADMIN) return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
+        else return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+
     }
 
     @Override
     public String getUsername() {
-        return this.getEmail();
+        return this.email;
     }
 
     @Override

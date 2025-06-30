@@ -42,17 +42,40 @@ public class UserService {
         return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
     }
 
-    public UserResponseDto getUserData(String poid) {
-        if (!ObjectId.isValid(poid)) {
-            throw new IllegalArgumentException("Invalid User ID format");
-        }
-
+    public UserResponseDto getUserData(ObjectId poid) {
         User user = userRepository.findByPoid(poid)
                 .orElseThrow(() -> {
                     return new RuntimeException("User not found with ID: " + poid);
                 });
 
         return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+    }
+
+    public UserResponseDto editUserData(User newUserData) {
+        Optional<User> existingUser = userRepository.findByPoid(newUserData.getPoid());
+        if(existingUser.isEmpty()) {
+            throw new RuntimeException("User not found with ID: " + newUserData.getPoid());
+        }
+
+        User user = existingUser.get();
+
+        Optional<User> userWithSameEmail = userRepository.findByEmail(newUserData.getEmail());
+        if(userWithSameEmail.isPresent() && !userWithSameEmail.get().getPoid().equals(newUserData.getPoid())) {
+            throw new RuntimeException("Email is already in use");
+        }
+
+        user.setPassword(newUserData.getPassword());
+        user.setName(newUserData.getName());
+        user.setEmail(newUserData.getEmail());
+
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save user");
+        }
+
+        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+
     }
 
     private String validateAndHashPassword(String rawPassword) {
