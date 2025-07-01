@@ -28,6 +28,14 @@ public class UserFacade {
         return new UserResponseDto(savedUser.getPoid(), savedUser.getName(), savedUser.getEmail(), savedUser.getCurrency());
     }
 
+    public UserResponseDto getUserDetails() {
+        ObjectId poid = (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = userService.getUserData(poid);
+
+        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+    }
+
     public List<UserResponseDto> getAllUsers() {
         List<User> usersList = userService.getAll();
 

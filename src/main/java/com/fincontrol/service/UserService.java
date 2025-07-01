@@ -42,13 +42,9 @@ public class UserService {
         return user;
     }
 
-    public UserResponseDto getUserData(ObjectId poid) {
-        User user = userRepository.findByPoid(poid)
-                .orElseThrow(() -> {
-                    return new RuntimeException("User not found with ID: " + poid);
-                });
-
-        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+    public User getUserData(ObjectId poid) {
+        return userRepository.findByPoid(poid)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + poid));
     }
 
     public User editUserData(User newUserData) {

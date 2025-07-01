@@ -35,8 +35,7 @@ public class UserController {
 
     @GetMapping("/details")
     public ResponseEntity<UserResponseDto> getUserData() {
-        ObjectId poid = (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(userService.getUserData(poid));
+        return ResponseEntity.ok(userFacade.getUserDetails());
     }
 
     @PutMapping("/edit")
