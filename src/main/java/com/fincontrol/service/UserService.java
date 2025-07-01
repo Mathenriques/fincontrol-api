@@ -60,7 +60,7 @@ public class UserService {
             throw new RuntimeException("Email is already in use");
         }
 
-        user.setPassword(newUserData.getPassword());
+        user.setPassword(validateAndHashPassword(newUserData.getPassword()));
         user.setName(newUserData.getName());
         user.setEmail(newUserData.getEmail());
 

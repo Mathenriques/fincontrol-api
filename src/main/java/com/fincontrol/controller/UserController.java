@@ -3,11 +3,7 @@ package com.fincontrol.controller;
 import com.fincontrol.dto.UserRequestDto;
 import com.fincontrol.dto.UserResponseDto;
 import com.fincontrol.facade.UserFacade;
-import com.fincontrol.model.User;
-import com.fincontrol.service.UserService;
-import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,11 +11,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/fincontrol/users")
 public class UserController {
-    private final UserService userService;
     private final UserFacade userFacade;
 
-    public UserController(UserService userService, UserFacade userFacade) {
-        this.userService = userService;
+    public UserController(UserFacade userFacade) {
         this.userFacade = userFacade;
     }
 
