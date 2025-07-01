@@ -1,6 +1,10 @@
 package com.fincontrol.service;
 
 import com.fincontrol.dto.UserResponseDto;
+import com.fincontrol.error.user.EmailAlreadyInUse;
+import com.fincontrol.error.user.FailedToSaveUser;
+import com.fincontrol.error.user.PasswordDoesNotMatchWithRules;
+import com.fincontrol.error.user.UserNotFound;
 import com.fincontrol.model.User;
 import com.fincontrol.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +38,7 @@ public class UserService {
         log.info("Creating user");
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new EmailAlreadyInUse();
         }
 
         user.setPassword(validateAndHashPassword(user.getPassword()));
@@ -44,20 +48,20 @@ public class UserService {
 
     public User getUserData(ObjectId poid) {
         return userRepository.findByPoid(poid)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + poid));
+                .orElseThrow(() -> new UserNotFound(poid.toHexString()));
     }
 
     public User editUserData(User newUserData) {
         Optional<User> existingUser = userRepository.findByPoid(newUserData.getPoid());
         if(existingUser.isEmpty()) {
-            throw new RuntimeException("User not found with ID: " + newUserData.getPoid());
+            throw new UserNotFound(newUserData.getPoid().toHexString());
         }
 
         User user = existingUser.get();
 
         Optional<User> userWithSameEmail = userRepository.findByEmail(newUserData.getEmail());
         if(userWithSameEmail.isPresent() && !userWithSameEmail.get().getPoid().equals(newUserData.getPoid())) {
-            throw new RuntimeException("Email is already in use");
+            throw new EmailAlreadyInUse();
         }
 
         user.setPassword(validateAndHashPassword(newUserData.getPassword()));
@@ -67,7 +71,7 @@ public class UserService {
         try {
             userRepository.save(user);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to save user");
+            throw new FailedToSaveUser();
         }
 
         return user;
@@ -75,11 +79,11 @@ public class UserService {
     }
 
     private String validateAndHashPassword(String rawPassword) {
-        String regexPasswordCheck = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$";
+        String regexPasswordCheck = "^(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$";
         Pattern pattern = Pattern.compile(regexPasswordCheck);
 
         if (!pattern.matcher(rawPassword).matches() || rawPassword.length() < 8) {
-            throw new RuntimeException("Password does not match with rules");
+            throw new PasswordDoesNotMatchWithRules();
         }
 
         return passwordEncoder.encode(rawPassword);
