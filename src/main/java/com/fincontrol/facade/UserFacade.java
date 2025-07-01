@@ -8,6 +8,9 @@ import org.bson.types.ObjectId;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class UserFacade {
 
@@ -23,6 +26,14 @@ public class UserFacade {
         User savedUser = userService.save(user);
 
         return new UserResponseDto(savedUser.getPoid(), savedUser.getName(), savedUser.getEmail(), savedUser.getCurrency());
+    }
+
+    public List<UserResponseDto> getAllUsers() {
+        List<User> usersList = userService.getAll();
+
+        return usersList.stream()
+                .map(user -> new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency()))
+                .toList();
     }
 
     public UserResponseDto editUser(UserRequestDto userRequestDto) {
