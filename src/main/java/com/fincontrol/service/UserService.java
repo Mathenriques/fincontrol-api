@@ -1,6 +1,10 @@
 package com.fincontrol.service;
 
 import com.fincontrol.dto.UserResponseDto;
+import com.fincontrol.error.user.EmailAlreadyInUse;
+import com.fincontrol.error.user.FailedToSaveUser;
+import com.fincontrol.error.user.PasswordDoesNotMatchWithRules;
+import com.fincontrol.error.user.UserNotFound;
 import com.fincontrol.model.User;
 import com.fincontrol.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -30,60 +34,56 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public UserResponseDto save(User user) {
+    public User save(User user) {
         log.info("Creating user");
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new EmailAlreadyInUse();
         }
 
         user.setPassword(validateAndHashPassword(user.getPassword()));
         userRepository.save(user);
-        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+        return user;
     }
 
-    public UserResponseDto getUserData(ObjectId poid) {
-        User user = userRepository.findByPoid(poid)
-                .orElseThrow(() -> {
-                    return new RuntimeException("User not found with ID: " + poid);
-                });
-
-        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+    public User getUserData(ObjectId poid) {
+        return userRepository.findByPoid(poid)
+                .orElseThrow(() -> new UserNotFound(poid.toHexString()));
     }
 
-    public UserResponseDto editUserData(User newUserData) {
+    public User editUserData(User newUserData) {
         Optional<User> existingUser = userRepository.findByPoid(newUserData.getPoid());
         if(existingUser.isEmpty()) {
-            throw new RuntimeException("User not found with ID: " + newUserData.getPoid());
+            throw new UserNotFound(newUserData.getPoid().toHexString());
         }
 
         User user = existingUser.get();
 
         Optional<User> userWithSameEmail = userRepository.findByEmail(newUserData.getEmail());
         if(userWithSameEmail.isPresent() && !userWithSameEmail.get().getPoid().equals(newUserData.getPoid())) {
-            throw new RuntimeException("Email is already in use");
+            throw new EmailAlreadyInUse();
         }
 
-        user.setPassword(newUserData.getPassword());
+        user.setPassword(validateAndHashPassword(newUserData.getPassword()));
         user.setName(newUserData.getName());
         user.setEmail(newUserData.getEmail());
 
         try {
             userRepository.save(user);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to save user");
+            throw new FailedToSaveUser();
         }
 
-        return new UserResponseDto(user.getPoid(), user.getName(), user.getEmail(), user.getCurrency());
+        return user;
 
     }
 
     private String validateAndHashPassword(String rawPassword) {
-        String regexPasswordCheck = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$";
+        String regexPasswordCheck = "^(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$";
         Pattern pattern = Pattern.compile(regexPasswordCheck);
 
         if (!pattern.matcher(rawPassword).matches() || rawPassword.length() < 8) {
-            throw new RuntimeException("Password does not match with rules");
+            throw new PasswordDoesNotMatchWithRules();
         }
 
         return passwordEncoder.encode(rawPassword);

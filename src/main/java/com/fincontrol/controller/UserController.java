@@ -1,11 +1,9 @@
 package com.fincontrol.controller;
 
+import com.fincontrol.dto.UserRequestDto;
 import com.fincontrol.dto.UserResponseDto;
-import com.fincontrol.model.User;
-import com.fincontrol.service.UserService;
-import org.bson.types.ObjectId;
+import com.fincontrol.facade.UserFacade;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,32 +11,29 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/fincontrol/users")
 public class UserController {
-    private final UserService userService;
+    private final UserFacade userFacade;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserFacade userFacade) {
+        this.userFacade = userFacade;
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAll() {
-        return ResponseEntity.ok(userService.getAll());
+    public ResponseEntity<List<UserResponseDto>> getAll() {
+        return ResponseEntity.ok(userFacade.getAllUsers());
     }
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> create(@RequestBody User user) {
-        return ResponseEntity.status(201).body(userService.save(user));
+    public ResponseEntity<UserResponseDto> create(@RequestBody UserRequestDto user) {
+        return ResponseEntity.status(201).body(userFacade.createUser(user));
     }
 
     @GetMapping("/details")
     public ResponseEntity<UserResponseDto> getUserData() {
-        ObjectId poid = (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(userService.getUserData(poid));
+        return ResponseEntity.ok(userFacade.getUserDetails());
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<UserResponseDto> editUser(@RequestBody User user) {
-        ObjectId poid = (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        user.setPoid(poid);
-        return ResponseEntity.ok(userService.editUserData(user));
+    public ResponseEntity<UserResponseDto> editUser(@RequestBody UserRequestDto user) {
+        return ResponseEntity.ok(userFacade.editUser(user));
     }
 }
