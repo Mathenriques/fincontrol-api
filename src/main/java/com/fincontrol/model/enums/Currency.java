@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum Currency {
-    DOLLAR("DolLar"),
+    DOLLAR("Dollar"),
     REAL("Real");
 
     private final String name;
