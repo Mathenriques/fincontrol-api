@@ -9,5 +9,4 @@ import java.util.Optional;
 
 public interface FlowRepository extends MongoRepository<Flow, ObjectId> {
     Optional<Flow> findByUserIdAndDescriptionAndType(ObjectId userId, String description, FlowEnum type);
-
 }

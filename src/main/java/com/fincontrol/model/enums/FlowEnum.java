@@ -2,18 +2,21 @@ package com.fincontrol.model.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
-@ToString
 public enum FlowEnum {
-    BASIC_NEEDS("necessidades básicas"),
-    LEISURE("lazer"),
-    EDUCATION("educação"),
-    INCOME("receitas"),
-    LONG_TERM("longo prazo"),
-    INVESTMENTS("investimentos");
+    BASIC_NEEDS("Necessidades Básicas"),
+    LEISURE("Lazer"),
+    EDUCATION("Educação"),
+    INCOME("Receitas"),
+    LONG_TERM("Longo Prazo"),
+    INVESTMENTS("Investimentos");
 
     private final String flow;
+
+    @Override
+    public String toString() {
+        return this.flow;
+    }
 }
