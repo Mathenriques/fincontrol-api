@@ -7,11 +7,13 @@ import com.fincontrol.facade.FlowFacade;
 import com.fincontrol.model.Flow;
 import com.fincontrol.service.FlowService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @AllArgsConstructor
+@Slf4j
 @Component
 public class FlowFacadeImpl implements FlowFacade {
 
@@ -48,7 +50,22 @@ public class FlowFacadeImpl implements FlowFacade {
                 updatedFlow.getType());
     }
 
+    @Override
+    public FlowResponseDto deleteFlow(String flowId) {
+        ObjectId userPoid = this.getUserPoid();
+        ObjectId id = new ObjectId(flowId);
+
+        Flow deletedFlow = this.flowService.delete(id, userPoid);
+
+        return new FlowResponseDto(
+                deletedFlow.getId().toHexString(),
+                deletedFlow.getUserId().toHexString(),
+                deletedFlow.getDescription(),
+                deletedFlow.getType());
+    }
+
     protected ObjectId getUserPoid() {
+        log.info("Getting user poid");
         return (ObjectId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

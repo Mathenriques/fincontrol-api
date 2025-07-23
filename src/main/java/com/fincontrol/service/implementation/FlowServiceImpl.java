@@ -5,6 +5,7 @@ import com.fincontrol.repository.FlowRepository;
 import com.fincontrol.service.FlowService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -64,7 +65,30 @@ public class FlowServiceImpl implements FlowService {
     }
 
     @Override
-    public void delete() {
+    public Flow delete(ObjectId id, ObjectId userId) {
+        log.info("Checking if id {} exists", id);
+        Optional<Flow> existsFlow = this.flowRepository.findById(id);
 
+        if (existsFlow.isEmpty()) {
+            log.error("Flow not found");
+            throw new RuntimeException("Flow not found");
+        }
+
+        log.info("Flow with id {} exists. Validating now if belongs to user {}", id, userId);
+        Flow flow = existsFlow.get();
+
+        if (!flow.getUserId().equals(userId)) {
+            log.error("Flow does not belong to this user");
+            throw new RuntimeException("Flow does not belong to this user");
+        }
+
+        try {
+            log.info("Trying to delete flow: {}", id);
+            this.flowRepository.deleteById(id);
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return flow;
     }
 }
