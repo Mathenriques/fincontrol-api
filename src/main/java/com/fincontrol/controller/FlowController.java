@@ -6,9 +6,11 @@ import com.fincontrol.dto.flow.FlowUpdateRequestDto;
 import com.fincontrol.facade.FlowFacade;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -16,6 +18,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/fincontrol/flows")
 public class FlowController {
     private final FlowFacade flowFacade;
+
+    @GetMapping
+    public ResponseEntity<List<FlowResponseDto>> getAllByUser() {
+        log.info("Calling get all flows by user endpoint");
+        return ResponseEntity.status(HttpStatus.OK).body(flowFacade.getAllFlowsByUserId());
+    }
 
     @PostMapping
     public ResponseEntity<FlowResponseDto> create(@RequestBody FlowRequestDto flow) {
@@ -26,12 +34,12 @@ public class FlowController {
     @PutMapping
     public ResponseEntity<FlowResponseDto> update(@RequestBody FlowUpdateRequestDto flow) {
         log.info("Calling update flow endpoint");
-        return ResponseEntity.status(200).body(flowFacade.updateFlow(flow));
+        return ResponseEntity.status(HttpStatus.OK).body(flowFacade.updateFlow(flow));
     }
 
     @DeleteMapping
     public ResponseEntity<FlowResponseDto> delete(@RequestParam("id") String flowId) {
         log.info("Calling delete flow endpoint");
-        return ResponseEntity.status(200).body(flowFacade.deleteFlow(flowId));
+        return ResponseEntity.status(HttpStatus.OK).body(flowFacade.deleteFlow(flowId));
     }
 }

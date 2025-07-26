@@ -1,5 +1,6 @@
 package com.fincontrol.service.implementation;
 
+import com.fincontrol.error.flow.*;
 import com.fincontrol.model.Flow;
 import com.fincontrol.repository.FlowRepository;
 import com.fincontrol.service.FlowService;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -18,46 +20,50 @@ public class FlowServiceImpl implements FlowService {
 
     @Override
     public Flow save(Flow flow) {
-        log.info("Creating flow: {}", flow);
-
-        Optional<Flow> existingFlow = this.flowRepository.findByUserIdAndDescriptionAndType(flow.getUserId(), flow.getDescription(), flow.getType());
+        log.info("Checking if flow: {} already exists", flow.toString());
+        Optional<Flow> existingFlow = this.flowRepository.findByUserIdAndDescriptionAndType(
+            flow.getUserId(),
+            flow.getDescription(),
+            flow.getType());
 
         if (existingFlow.isPresent()) {
-            throw new RuntimeException("Already exists this flow");
+            log.error("Flow already exists: {}", existingFlow.toString());
+            throw new FlowAlreadyExistsException();
         }
 
-        this.flowRepository.save(flow);
+        try {
+            log.info("Saving flow on database");
+            this.flowRepository.save(flow);
+        } catch (final Exception e) {
+            log.error("Failed to save flow due to: {}", e.getMessage(), e);
+            throw new FailedToSaveFlowException(e.getMessage());
+        }
         log.info("Flow {} created", flow);
         return flow;
     }
 
     @Override
     public Flow update(Flow newFlowData) {
-        Optional<Flow> existsFlow = this.flowRepository.findById(newFlowData.getId());
+        String userId = newFlowData.getUserId().toHexString();
 
-        if (existsFlow.isEmpty()) {
-            log.error("Flow not found");
-            throw new RuntimeException("Flow not found");
-        }
+        Flow flow = this.checkIfFlowExistsById(newFlowData.getId());
 
-        Flow flow = existsFlow.get();
-
-        if (!newFlowData.getUserId().toHexString().equals(flow.getUserId().toHexString())) {
+        if (!userId.equals(flow.getUserId().toHexString())) {
             log.error("This flow do not belongs to this user. Flow owner: {} while user: {}",
-                    newFlowData.getUserId().toHexString(),
+                    userId,
                     flow.getUserId().toHexString());
-            throw new RuntimeException("This flow does not belongs to this user");
+            throw new FlowDoesntBelongToUserException(userId);
         }
-
 
         flow.setDescription(newFlowData.getDescription());
         flow.setType(newFlowData.getType());
 
         try {
+            log.info("Saving flow with new data: {}", flow);
             this.flowRepository.save(flow);
         } catch (Exception e) {
             log.error("Failed to save flow, due to: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to save flow");
+            throw new FailedToSaveFlowException(e.getMessage());
         }
 
         return flow;
@@ -66,29 +72,48 @@ public class FlowServiceImpl implements FlowService {
 
     @Override
     public Flow delete(ObjectId id, ObjectId userId) {
-        log.info("Checking if id {} exists", id);
-        Optional<Flow> existsFlow = this.flowRepository.findById(id);
-
-        if (existsFlow.isEmpty()) {
-            log.error("Flow not found");
-            throw new RuntimeException("Flow not found");
-        }
+        Flow flow = this.checkIfFlowExistsById(id);
 
         log.info("Flow with id {} exists. Validating now if belongs to user {}", id, userId);
-        Flow flow = existsFlow.get();
-
         if (!flow.getUserId().equals(userId)) {
             log.error("Flow does not belong to this user");
-            throw new RuntimeException("Flow does not belong to this user");
+            throw new FlowDoesntBelongToUserException(userId.toHexString());
         }
 
         try {
             log.info("Trying to delete flow: {}", id);
             this.flowRepository.deleteById(id);
         } catch (final Exception e) {
-            throw new RuntimeException(e);
+            log.error("Failed to delete flow by id {} from database", id.toHexString(), e);
+            throw new FailedToDeleteFlowException(e.getMessage());
         }
 
         return flow;
+    }
+
+    @Override
+    public List<Flow> getAllFlowsByUser(ObjectId userId) {
+        log.info("Finding for user {} flows", userId);
+        List<Flow> flows;
+
+        try {
+            flows = this.flowRepository.findByUserId(userId);
+        } catch (final Exception e) {
+            log.error("Failed to find flow list from userId {}", userId.toHexString(), e);
+            throw new FailedToFindFlowsException(userId.toHexString(), e.getMessage());
+        }
+        return flows;
+    }
+
+    private Flow checkIfFlowExistsById(ObjectId id) {
+        log.info("Checking if flow with id: {} exists", id.toHexString());
+        Optional<Flow> existsFlow = this.flowRepository.findById(id);
+
+        if (existsFlow.isEmpty()) {
+            log.error("Could not found flow id {} on Database", id.toHexString());
+            throw new FlowNotFoundException();
+        }
+
+        return existsFlow.get();
     }
 }

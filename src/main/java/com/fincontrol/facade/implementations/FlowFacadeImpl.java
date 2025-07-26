@@ -12,6 +12,9 @@ import org.bson.types.ObjectId;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @AllArgsConstructor
 @Slf4j
 @Component
@@ -28,10 +31,10 @@ public class FlowFacadeImpl implements FlowFacade {
         Flow savedFlow = this.flowService.save(flow);
 
         return new FlowResponseDto(
-                savedFlow.getId().toHexString(),
-                savedFlow.getUserId().toHexString(),
-                savedFlow.getDescription(),
-                savedFlow.getType());
+            savedFlow.getId().toHexString(),
+            savedFlow.getUserId().toHexString(),
+            savedFlow.getDescription(),
+            savedFlow.getType());
     }
 
     @Override
@@ -44,10 +47,10 @@ public class FlowFacadeImpl implements FlowFacade {
         Flow updatedFlow = this.flowService.update(flow);
 
         return new FlowResponseDto(
-                updatedFlow.getId().toHexString(),
-                updatedFlow.getUserId().toHexString(),
-                updatedFlow.getDescription(),
-                updatedFlow.getType());
+            updatedFlow.getId().toHexString(),
+            updatedFlow.getUserId().toHexString(),
+            updatedFlow.getDescription(),
+            updatedFlow.getType());
     }
 
     @Override
@@ -58,10 +61,26 @@ public class FlowFacadeImpl implements FlowFacade {
         Flow deletedFlow = this.flowService.delete(id, userPoid);
 
         return new FlowResponseDto(
-                deletedFlow.getId().toHexString(),
-                deletedFlow.getUserId().toHexString(),
-                deletedFlow.getDescription(),
-                deletedFlow.getType());
+            deletedFlow.getId().toHexString(),
+            deletedFlow.getUserId().toHexString(),
+            deletedFlow.getDescription(),
+            deletedFlow.getType());
+    }
+
+    @Override
+    public List<FlowResponseDto> getAllFlowsByUserId() {
+        ObjectId userPoid = this.getUserPoid();
+
+        List<Flow> flows = this.flowService.getAllFlowsByUser(userPoid);
+
+        return flows.stream()
+            .map(flow -> new FlowResponseDto(
+                flow.getId().toHexString(),
+                flow.getUserId().toHexString(),
+                flow.getDescription(),
+                flow.getType())
+            )
+            .collect(Collectors.toList());
     }
 
     protected ObjectId getUserPoid() {

@@ -5,8 +5,11 @@ import com.fincontrol.dto.flow.FlowResponseDto;
 import com.fincontrol.dto.flow.FlowUpdateRequestDto;
 import org.bson.types.ObjectId;
 
+import java.util.List;
+
 public interface FlowFacade {
     FlowResponseDto saveFlow(FlowRequestDto flowRequestDto);
     FlowResponseDto updateFlow(FlowUpdateRequestDto flowRequestDto);
     FlowResponseDto deleteFlow(String flowId);
+    List<FlowResponseDto> getAllFlowsByUserId();
 }
