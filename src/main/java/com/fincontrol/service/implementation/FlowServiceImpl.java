@@ -1,6 +1,7 @@
 package com.fincontrol.service.implementation;
 
 import com.fincontrol.error.flow.*;
+import com.fincontrol.factory.PredefinedFlowFactory;
 import com.fincontrol.model.Flow;
 import com.fincontrol.repository.FlowRepository;
 import com.fincontrol.service.FlowService;
@@ -17,6 +18,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class FlowServiceImpl implements FlowService {
     private final FlowRepository flowRepository;
+    private final PredefinedFlowFactory predefinedFlowFactory;
 
     @Override
     public Flow save(Flow flow) {
@@ -27,7 +29,7 @@ public class FlowServiceImpl implements FlowService {
             flow.getType());
 
         if (existingFlow.isPresent()) {
-            log.error("Flow already exists: {}", existingFlow.toString());
+            log.error("Flow already exists: {}", existingFlow);
             throw new FlowAlreadyExistsException();
         }
 
@@ -40,6 +42,19 @@ public class FlowServiceImpl implements FlowService {
         }
         log.info("Flow {} created", flow);
         return flow;
+    }
+
+    @Override
+    public List<Flow> saveFlowList(ObjectId userId, List<Flow> flowList) {
+        try {
+            log.info("Saving flow list");
+            flowRepository.saveAll(flowList);
+        } catch (final Exception e) {
+            log.error("Failed to save flows due to: {}", e.getMessage(), e);
+            throw new FailedToSaveFlowException(e.getMessage());
+        }
+
+        return flowList;
     }
 
     @Override

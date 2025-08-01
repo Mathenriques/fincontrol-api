@@ -1,9 +1,8 @@
 package com.fincontrol.facade.implementations;
 
-import com.fincontrol.dto.flow.FlowRequestDto;
-import com.fincontrol.dto.flow.FlowResponseDto;
-import com.fincontrol.dto.flow.FlowUpdateRequestDto;
+import com.fincontrol.dto.flow.*;
 import com.fincontrol.facade.FlowFacade;
+import com.fincontrol.factory.PredefinedFlowFactory;
 import com.fincontrol.model.Flow;
 import com.fincontrol.service.FlowService;
 import lombok.AllArgsConstructor;
@@ -13,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class FlowFacadeImpl implements FlowFacade {
 
     private final FlowService flowService;
+    private final PredefinedFlowFactory predefinedFlowFactory;
 
     @Override
     public FlowResponseDto saveFlow(FlowRequestDto flowRequestDto) {
@@ -35,6 +36,22 @@ public class FlowFacadeImpl implements FlowFacade {
             savedFlow.getUserId().toHexString(),
             savedFlow.getDescription(),
             savedFlow.getType());
+    }
+
+    @Override
+    public List<Flow> savePredefinedFlowsIfUserHasNone() {
+        ObjectId userPoid = this.getUserPoid();
+        List<Flow> flows = flowService.getAllFlowsByUser(userPoid);
+
+        return flows.isEmpty()
+                ? flowService.saveFlowList(userPoid, predefinedFlowFactory.createPredefinedFlowsForUser(userPoid))
+                : flows;
+    }
+
+    @Override
+    public List<Flow> saveCustomFlows(List<Flow> flowList) {
+        ObjectId userPoid = this.getUserPoid();
+        return flowService.saveFlowList(userPoid, flowList);
     }
 
     @Override
