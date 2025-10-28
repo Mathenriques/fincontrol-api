@@ -1,6 +1,5 @@
 package com.fincontrol.service;
 
-import com.fincontrol.dto.UserResponseDto;
 import com.fincontrol.error.user.EmailAlreadyInUse;
 import com.fincontrol.error.user.FailedToSaveUser;
 import com.fincontrol.error.user.PasswordDoesNotMatchWithRules;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
